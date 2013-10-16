@@ -85,3 +85,15 @@ func CreateDict(lines []string) {
         }
     }
 }
+
+func CreateMatrix(lines []string) {
+    for patent_index, line := range lines {
+        tmpmap := make(map[string]int)
+        for _, token := range tokenize(line, false) {
+            tmpmap[token] += 1
+        }
+        for token, count := range(tmpmap) {
+            fmt.Println("(",patent_index,",",Dict[token],",",count,")")
+        }
+    }
+}
