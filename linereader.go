@@ -64,3 +64,24 @@ func tokenize(instring string, stem bool) []string {
 	}
 	return tokens
 }
+
+/**
+  TODO: fold this functionality into reading the file
+
+  Given the output of Read_file, populates Dict, a map[string]int.
+  Iterates through each of the found lines, tokenizes the line,
+  and adds tokens to the Dict, which maintains a mapping of a token
+  to its index
+*/
+func CreateDict(lines []string) {
+    index := 0
+    for _, line := range lines {
+        tokens := tokenize(line, false)
+        for _, token := range tokens {
+            if Dict[token] == 0 {
+                Dict[token] = index
+                index += 1
+            }
+        }
+    }
+}
