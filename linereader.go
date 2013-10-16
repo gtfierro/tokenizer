@@ -5,7 +5,10 @@ import (
     "fmt"
     "os"
     "html"
+    "strings"
 )
+
+var replacer = strings.NewReplacer(".", "", ",", "", "!", "", "?", "", "||", "", "(", "", ")", "")
 
 func Read_file(filename string) []string{
     results := []string{}
@@ -21,7 +24,10 @@ func Read_file(filename string) []string{
         if err != nil {
             break
         }
-        results = append(results, html.UnescapeString(line))
+        line = html.UnescapeString(line)
+        line = strings.ToLower(line)
+        line = replacer.Replace(line)
+        results = append(results, line)
     }
     return results
 }
