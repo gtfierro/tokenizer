@@ -6,6 +6,7 @@ import (
     "os"
     "html"
     "strings"
+	"github.com/agonopol/go-stem/stemmer"
 )
 
 var replacer = strings.NewReplacer(".", "", ",", "", "!", "", "?", "", "||", "", "(", "", ")", "")
@@ -38,4 +39,24 @@ func Read_file(filename string) []string{
         results = append(results, line)
     }
     return results
+}
+
+/**
+    Takes as input a space-delimited string and returns a slice of all the
+    tokens in that string.
+
+    If the `stem` flag is True, applies the Porter stemming algorithm
+    to each token
+*/
+func tokenize(instring string, stem bool) []string {
+    tokens := strings.Split(instring, " ")
+    if stem {
+        res := []string{}
+        for _, t := range tokens {
+            stem := stemmer.Stem([]byte(t))
+            res = append(res, string(stem))
+        }
+        return res
+    }
+    return tokens
 }
