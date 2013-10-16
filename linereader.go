@@ -10,6 +10,14 @@ import (
 
 var replacer = strings.NewReplacer(".", "", ",", "", "!", "", "?", "", "||", "", "(", "", ")", "")
 
+/**
+    Takes as input a filename containing the full text for a patent on each line. Returns
+    a string slice where each entry is the full text of a patent (order is maintained)
+    which has had the following transformations applied to it:
+    * unescaped HTML sequences
+    * lowercase
+    * removed all .,!?||()
+*/
 func Read_file(filename string) []string{
     results := []string{}
     file, err := os.Open(filename)
