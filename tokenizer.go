@@ -7,6 +7,7 @@ import (
 	"html"
 	"os"
 	"strings"
+    "strconv"
 )
 
 var replacer = strings.NewReplacer(".", "", ",", "", "!", "", "?", "", "||", "", "(", "", ")", "")
@@ -42,6 +43,7 @@ func Read_file(filename string) []string {
 		line = replacer.Replace(line)
 		results = append(results, line)
 	}
+    fmt.Println("Finished reading input file", filename)
 	return results
 }
 
@@ -74,6 +76,7 @@ func tokenize(instring string, stem bool) []string {
   to its index
 */
 func CreateDict(lines []string) {
+    fmt.Println("Creating token dictionary")
     index := 0
     for _, line := range lines {
         tokens := tokenize(line, false)
@@ -84,16 +87,22 @@ func CreateDict(lines []string) {
             }
         }
     }
+    fmt.Println("Finished creating token dictionary with", len(Dict), "items")
 }
 
 func CreateMatrix(lines []string) {
     for patent_index, line := range lines {
-        tmpmap := make(map[string]int)
-        for _, token := range tokenize(line, false) {
-            tmpmap[token] += 1
-        }
-        for token, count := range(tmpmap) {
-            fmt.Println("(",patent_index,",",Dict[token],",",count,")")
-        }
+        emit_sparse(patent_index, line)
+    }
+}
+
+func emit_sparse(patent_index int, line string) {
+    tmpmap := make(map[string]int)
+    for _, token := range tokenize(line, false) {
+        tmpmap[token] += 1
+    }
+    for token, count := range(tmpmap) {
+        entry := "(" + strconv.Itoa(patent_index) + "," + strconv.Itoa(Dict[token]) + "," + strconv.Itoa(count) + ")"
+        fmt.Println(entry)
     }
 }
