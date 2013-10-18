@@ -6,8 +6,8 @@ import (
 	"github.com/agonopol/go-stem/stemmer"
 	"html"
 	"os"
+	"strconv"
 	"strings"
-    "strconv"
 )
 
 var replacer = strings.NewReplacer(".", "", ",", "", "!", "", "?", "", "||", "", "(", "", ")", "")
@@ -43,7 +43,7 @@ func Read_file(filename string) []string {
 		line = replacer.Replace(line)
 		results = append(results, line)
 	}
-    fmt.Println("Finished reading input file", filename)
+	fmt.Println("Finished reading input file", filename)
 	return results
 }
 
@@ -76,16 +76,16 @@ func tokenize(instring string, stem bool) []string {
   to its index
 */
 func CreateDict(lines []string) {
-    fmt.Println("Creating token dictionary")
-    index := 0
-    for _, line := range lines {
-        tokens := tokenize(line, false)
-        for _, token := range tokens {
-            if Dict[token] == 0 {
-                Dict[token] = index
-                index += 1
-            }
-        }
-    }
-    fmt.Println("Finished creating token dictionary with", len(Dict), "items")
+	fmt.Println("Creating token dictionary")
+	index := 0
+	for _, line := range lines {
+		tokens := tokenize(line, false)
+		for _, token := range tokens {
+			if Dict[token] == 0 {
+				Dict[token] = index
+				index += 1
+			}
+		}
+	}
+	fmt.Println("Finished creating token dictionary with", len(Dict), "items")
 }
