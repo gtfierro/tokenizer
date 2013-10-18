@@ -6,6 +6,13 @@ import (
 	"sync"
 )
 
+func print_map(patent_index int, tmpmap map[string]int) {
+	for token, count := range tmpmap {
+		entry := "(" + strconv.Itoa(patent_index) + "," + strconv.Itoa(Dict[token]) + "," + strconv.Itoa(count) + ")"
+		fmt.Println(entry)
+	}
+}
+
 /** Parallel **/
 
 var wg sync.WaitGroup
@@ -24,10 +31,7 @@ func pemit_sparse(patent_index int, line string) {
 	for _, token := range tokenize(line, false) {
 		tmpmap[token] += 1
 	}
-	for token, count := range tmpmap {
-		entry := "(" + strconv.Itoa(patent_index) + "," + strconv.Itoa(Dict[token]) + "," + strconv.Itoa(count) + ")"
-		fmt.Println(entry)
-	}
+    print_map(patent_index, tmpmap)
 }
 
 /** Sequential **/
@@ -43,8 +47,5 @@ func emit_sparse(patent_index int, line string) {
 	for _, token := range tokenize(line, false) {
 		tmpmap[token] += 1
 	}
-	for token, count := range tmpmap {
-		entry := "(" + strconv.Itoa(patent_index) + "," + strconv.Itoa(Dict[token]) + "," + strconv.Itoa(count) + ")"
-		fmt.Println(entry)
-	}
+    print_map(patent_index, tmpmap)
 }

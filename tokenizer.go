@@ -6,7 +6,6 @@ import (
 	"github.com/agonopol/go-stem/stemmer"
 	"html"
 	"os"
-	"strconv"
 	"strings"
 )
 
