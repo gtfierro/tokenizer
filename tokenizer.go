@@ -7,12 +7,12 @@ import (
 	"html"
 	"os"
 	"strings"
-    "sync"
+	"sync"
 )
 
 var replacer = strings.NewReplacer(".", "", ",", "", "!", "", "?", "", "||", "", "(", "", ")", "", "\"", "", "'", "")
 var filewg sync.WaitGroup
-var fileChannel = make(chan string, 100)
+var fileChannel = make(chan string)
 
 var Dict = make(map[string]int) // maps tokens to an index
 var Dictfile = "dict.csv"
@@ -34,25 +34,19 @@ func readFile(filename string) {
 	}
 	defer file.Close()
 	reader := bufio.NewReader(file)
-    filewg.Add(1)
-    go func() {
-        for {
-            line, err := reader.ReadString('\n')
-            if err != nil {
-                //fmt.Println(err)
-                fmt.Println("donedoneasdfasdfasdfasdfasdfasf")
-                filewg.Done()
-                close(fileChannel)
-                break
-            }
-            line = html.UnescapeString(line)
-            line = strings.ToLower(line)
-            line = strings.Trim(line, " ")
-            line = replacer.Replace(line)
-            fileChannel <- line
-        }
-    }()
-    filewg.Wait()
+	filewg.Add(1)
+	go func() {
+		for {
+			line, err := reader.ReadString('\n')
+			if err != nil {
+				filewg.Done()
+				close(fileChannel)
+				break
+			}
+			fileChannel <- line
+		}
+	}()
+	filewg.Wait()
 	fmt.Println("Finished reading input file", filename)
 	//return results
 }
@@ -88,8 +82,12 @@ func tokenize(instring string, stem bool) []string {
 func CreateDict(filename string) {
 	fmt.Println("Creating token dictionary")
 	index := 0
-    go readFile(filename)
+	go readFile(filename)
 	for line := range fileChannel {
+		line = html.UnescapeString(line)
+		line = strings.ToLower(line)
+		line = strings.Trim(line, " ")
+		line = replacer.Replace(line)
 		tokens := tokenize(line, false)
 		for _, token := range tokens {
 			if Dict[token] == 0 {
