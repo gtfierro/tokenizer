@@ -7,9 +7,10 @@ import (
 	"html"
 	"os"
 	"strings"
+    "sync"
 )
 
-var replacer = strings.NewReplacer(".", "", ",", "", "!", "", "?", "", "||", "", "(", "", ")", "")
+var replacer = strings.NewReplacer(".", "", ",", "", "!", "", "?", "", "||", "", "(", "", ")", "", "\"", "", "'", "")
 
 var Dict = make(map[string]int) // maps tokens to an index
 var Dictfile = "dict.csv"
@@ -21,7 +22,7 @@ var Matrixfile = "matrix.csv"
   which has had the following transformations applied to it:
   * unescaped HTML sequences
   * lowercase
-  * removed all .,!?||()
+  * removed all .,!?||()"'
 */
 func Read_file(filename string) []string {
 	results := []string{}
