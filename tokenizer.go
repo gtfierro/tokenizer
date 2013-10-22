@@ -4,10 +4,9 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/agonopol/go-stem/stemmer"
-	"html"
+	_ "html"
 	"os"
 	"strings"
-    "sync"
 )
 
 var replacer = strings.NewReplacer(".", "", ",", "", "!", "", "?", "", "||", "", "(", "", ")", "", "\"", "", "'", "")
@@ -38,9 +37,10 @@ func Read_file(filename string) []string {
 		if err != nil {
 			break
 		}
-		line = html.UnescapeString(line)
-		line = strings.ToLower(line)
-		line = replacer.Replace(line)
+		//line = html.UnescapeString(line)
+		//line = strings.ToLower(line)
+        //line = strings.Trim(line, " ")
+		//line = replacer.Replace(line)
 		results = append(results, line)
 	}
 	fmt.Println("Finished reading input file", filename)
