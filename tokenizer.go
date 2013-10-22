@@ -4,12 +4,15 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/agonopol/go-stem/stemmer"
-	_ "html"
+	"html"
 	"os"
 	"strings"
+    "sync"
 )
 
 var replacer = strings.NewReplacer(".", "", ",", "", "!", "", "?", "", "||", "", "(", "", ")", "", "\"", "", "'", "")
+var filewg sync.WaitGroup
+var fileChannel = make(chan string, 100)
 
 var Dict = make(map[string]int) // maps tokens to an index
 var Dictfile = "dict.csv"
@@ -23,8 +26,7 @@ var Matrixfile = "matrix.csv"
   * lowercase
   * removed all .,!?||()"'
 */
-func Read_file(filename string) []string {
-	results := []string{}
+func readFile(filename string) {
 	file, err := os.Open(filename)
 	if err != nil {
 		fmt.Println(err)
@@ -32,19 +34,27 @@ func Read_file(filename string) []string {
 	}
 	defer file.Close()
 	reader := bufio.NewReader(file)
-	for {
-		line, err := reader.ReadString('\n')
-		if err != nil {
-			break
-		}
-		//line = html.UnescapeString(line)
-		//line = strings.ToLower(line)
-        //line = strings.Trim(line, " ")
-		//line = replacer.Replace(line)
-		results = append(results, line)
-	}
+    filewg.Add(1)
+    go func() {
+        for {
+            line, err := reader.ReadString('\n')
+            if err != nil {
+                //fmt.Println(err)
+                fmt.Println("donedoneasdfasdfasdfasdfasdfasf")
+                filewg.Done()
+                close(fileChannel)
+                break
+            }
+            line = html.UnescapeString(line)
+            line = strings.ToLower(line)
+            line = strings.Trim(line, " ")
+            line = replacer.Replace(line)
+            fileChannel <- line
+        }
+    }()
+    filewg.Wait()
 	fmt.Println("Finished reading input file", filename)
-	return results
+	//return results
 }
 
 /**
@@ -75,10 +85,11 @@ func tokenize(instring string, stem bool) []string {
   and adds tokens to the Dict, which maintains a mapping of a token
   to its index
 */
-func CreateDict(lines []string) {
+func CreateDict(filename string) {
 	fmt.Println("Creating token dictionary")
 	index := 0
-	for _, line := range lines {
+    go readFile(filename)
+	for line := range fileChannel {
 		tokens := tokenize(line, false)
 		for _, token := range tokens {
 			if Dict[token] == 0 {
