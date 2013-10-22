@@ -6,7 +6,7 @@ import (
 	"sync"
 )
 
-var in = make(chan string)
+var in = make(chan string, 100)
 var done = make(chan bool)
 
 func handle_print() {
