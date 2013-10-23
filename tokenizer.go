@@ -3,16 +3,16 @@ package tokenizer
 import (
 	"bufio"
 	"fmt"
+    "bytes"
 	"github.com/agonopol/go-stem/stemmer"
-	"html"
+	_ "html"
 	"os"
-	"strings"
+	_ "strings"
 	"sync"
 )
 
-var replacer = strings.NewReplacer(".", "", ",", "", "!", "", "?", "", "||", "", "(", "", ")", "", "\"", "", "'", "")
 var filewg sync.WaitGroup
-var fileChannel = make(chan string)
+var fileChannel = make(chan []byte)
 
 var Dict = make(map[string]int) // maps tokens to an index
 var Dictfile = "dict.csv"
@@ -37,7 +37,7 @@ func readFile(filename string) {
 	filewg.Add(1)
 	go func() {
 		for {
-			line, err := reader.ReadString('\n')
+			line, err := reader.ReadBytes('\n')
 			if err != nil {
 				filewg.Done()
 				close(fileChannel)
@@ -58,43 +58,15 @@ func readFile(filename string) {
   If the `stem` flag is True, applies the Porter stemming algorithm
   to each token
 */
-func tokenize(instring string, stem bool) []string {
-	tokens := strings.Split(instring, " ")
+func tokenize(instring []byte, stem bool) [][]byte {
+	tokens := bytes.Split(instring, []byte(" "))
 	if stem {
-		res := []string{}
+		res := [][]byte{}
 		for _, t := range tokens {
-			stem := stemmer.Stem([]byte(t))
-			res = append(res, string(stem))
+			stem := stemmer.Stem(t)
+			res = append(res, stem)
 		}
 		return res
 	}
 	return tokens
-}
-
-/**
-  TODO: fold this functionality into reading the file
-
-  Given the output of Read_file, populates Dict, a map[string]int.
-  Iterates through each of the found lines, tokenizes the line,
-  and adds tokens to the Dict, which maintains a mapping of a token
-  to its index
-*/
-func CreateDict(filename string) {
-	fmt.Println("Creating token dictionary")
-	index := 0
-	go readFile(filename)
-	for line := range fileChannel {
-		line = html.UnescapeString(line)
-		line = strings.ToLower(line)
-		line = strings.Trim(line, " ")
-		line = replacer.Replace(line)
-		tokens := tokenize(line, false)
-		for _, token := range tokens {
-			if Dict[token] == 0 {
-				Dict[token] = index
-				index += 1
-			}
-		}
-	}
-	fmt.Println("Finished creating token dictionary with", len(Dict), "items")
 }

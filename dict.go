@@ -2,12 +2,14 @@ package tokenizer
 
 import (
 	"fmt"
-	"html"
-	"strings"
+	_ "html"
+	_ "strings"
+    "bytes"
 	"sync"
+    _ "runtime"
 )
 
-var tokenChannel = make(chan []string)
+var tokenChannel = make(chan [][]byte)
 var doneChannel = make(chan bool)
 var tokenwg sync.WaitGroup
 
@@ -17,6 +19,7 @@ func process() {
 		select {
 		case tokens := <-tokenChannel:
 			for _, token := range tokens {
+                token := string(token)
 				if Dict[token] == 0 {
 					Dict[token] = index
 					index += 1
@@ -28,17 +31,33 @@ func process() {
 	}
 }
 
-func deliver(line string) {
+func deliver(line []byte) {
 	defer tokenwg.Done()
-	line = html.UnescapeString(line)
-	line = strings.ToLower(line)
-	line = strings.Trim(line, " ")
-	line = replacer.Replace(line)
+	//line = html.UnescapeString(line)
+	line = bytes.ToLower(line)
+	line = bytes.Trim(line, " ")
+    line = bytes.Replace(line, []byte("."), []byte(""), -1)
+    line = bytes.Replace(line, []byte(","), []byte(""), -1)
+    line = bytes.Replace(line, []byte("!"), []byte(""), -1)
+    line = bytes.Replace(line, []byte("?"), []byte(""), -1)
+    line = bytes.Replace(line, []byte("|"), []byte(""), -1)
+    line = bytes.Replace(line, []byte("("), []byte(""), -1)
+    line = bytes.Replace(line, []byte(")"), []byte(""), -1)
+    line = bytes.Replace(line, []byte("'"), []byte(""), -1)
+    line = bytes.Replace(line, []byte("\""),[]byte(""), -1)
+    line = bytes.Replace(line, []byte("\t"),[]byte(""), -1)
+    line = bytes.Replace(line, []byte("\n"),[]byte(""), -1)
 	tokens := tokenize(line, false)
 	tokenChannel <- tokens
 }
 
-func CreateDict2(filename string) {
+/**
+  Given the output of Read_file, populates Dict, a map[string]int.
+  Iterates through each of the found lines, tokenizes the line,
+  and adds tokens to the Dict, which maintains a mapping of a token
+  to its index
+*/
+func CreateDict(filename string) {
 	go process()
 	go readFile(filename)
 	fmt.Println("Creating token dictionary")
