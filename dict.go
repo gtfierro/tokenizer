@@ -1,14 +1,24 @@
 package tokenizer
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
+	"os"
+	"strconv"
 	"sync"
 )
 
 var tokenChannel = make(chan []string)
 var doneChannel = make(chan bool)
 var tokenwg sync.WaitGroup
+
+type Entry struct {
+	token string
+	index int
+}
+
+var entryChannel = make(chan *Entry)
 
 func process() {
 	index := 0
@@ -19,6 +29,8 @@ func process() {
 				token := string(token)
 				if Dict[token] == 0 {
 					Dict[token] = index
+					e := &Entry{token, index}
+					entryChannel <- e
 					index += 1
 				}
 			}
@@ -51,6 +63,21 @@ func deliver(line []byte) {
 	tokenChannel <- tokens
 }
 
+func outputDict() {
+	outfile, err := os.Create(Dictfile)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer outfile.Close()
+	writer := bufio.NewWriter(outfile)
+	for e := range entryChannel {
+		line := e.token + "," + strconv.Itoa(e.index) + "\n"
+		writer.WriteString(line)
+	}
+	writer.Flush()
+}
+
 /**
   Given the output of Read_file, populates Dict, a map[string]int.
   Iterates through each of the found lines, tokenizes the line,
@@ -60,6 +87,7 @@ func deliver(line []byte) {
 func CreateDict(filename string) {
 	go process()
 	go readFile(filename)
+	go outputDict()
 	fmt.Println("Creating token dictionary")
 	for line := range fileChannel {
 		tokenwg.Add(1)
