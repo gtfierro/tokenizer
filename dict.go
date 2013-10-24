@@ -42,7 +42,6 @@ func process() {
 
 func deliver(line []byte) {
 	defer tokenwg.Done()
-	//line = html.UnescapeString(line)
 	line = UnescapeBytes(line)
 	line = bytes.ToLower(line)
 	line = bytes.Trim(line, " ")
