@@ -42,6 +42,8 @@ func deliver(line []byte) {
 	line = bytes.Replace(line, []byte("("), []byte(""), -1)
 	line = bytes.Replace(line, []byte(")"), []byte(""), -1)
 	line = bytes.Replace(line, []byte("'"), []byte(""), -1)
+	line = bytes.Replace(line, []byte("”"), []byte(""), -1)
+	line = bytes.Replace(line, []byte("“"), []byte(""), -1)
 	line = bytes.Replace(line, []byte("\""), []byte(""), -1)
 	line = bytes.Replace(line, []byte("\t"), []byte(""), -1)
 	line = bytes.Replace(line, []byte("\n"), []byte(""), -1)
