@@ -58,15 +58,14 @@ func readFile(filename string) {
   If the `stem` flag is True, applies the Porter stemming algorithm
   to each token
 */
-func tokenize(instring []byte, stem bool) [][]byte {
+func tokenize(instring []byte, stem bool) []string {
 	tokens := bytes.Split(instring, []byte(" "))
-	if stem {
-		res := [][]byte{}
-		for _, t := range tokens {
-			stem := stemmer.Stem(t)
-			res = append(res, stem)
-		}
-		return res
-	}
-	return tokens
+    res := []string{}
+    for _, t := range tokens {
+        if stem {
+            t = stemmer.Stem(t)
+        }
+        res = append(res, string(t))
+    }
+    return res
 }

@@ -9,7 +9,7 @@ import (
     _ "runtime"
 )
 
-var tokenChannel = make(chan [][]byte)
+var tokenChannel = make(chan []string)
 var doneChannel = make(chan bool)
 var tokenwg sync.WaitGroup
 
