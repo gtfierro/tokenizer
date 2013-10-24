@@ -3,9 +3,6 @@ package tokenizer
 import (
 	"bytes"
 	"fmt"
-	_ "html"
-	_ "runtime"
-	_ "strings"
 	"sync"
 )
 
