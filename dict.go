@@ -1,12 +1,12 @@
 package tokenizer
 
 import (
+	"bytes"
 	"fmt"
 	_ "html"
+	_ "runtime"
 	_ "strings"
-    "bytes"
 	"sync"
-    _ "runtime"
 )
 
 var tokenChannel = make(chan []string)
@@ -19,7 +19,7 @@ func process() {
 		select {
 		case tokens := <-tokenChannel:
 			for _, token := range tokens {
-                token := string(token)
+				token := string(token)
 				if Dict[token] == 0 {
 					Dict[token] = index
 					index += 1
@@ -34,19 +34,20 @@ func process() {
 func deliver(line []byte) {
 	defer tokenwg.Done()
 	//line = html.UnescapeString(line)
+	line = UnescapeBytes(line)
 	line = bytes.ToLower(line)
 	line = bytes.Trim(line, " ")
-    line = bytes.Replace(line, []byte("."), []byte(""), -1)
-    line = bytes.Replace(line, []byte(","), []byte(""), -1)
-    line = bytes.Replace(line, []byte("!"), []byte(""), -1)
-    line = bytes.Replace(line, []byte("?"), []byte(""), -1)
-    line = bytes.Replace(line, []byte("|"), []byte(""), -1)
-    line = bytes.Replace(line, []byte("("), []byte(""), -1)
-    line = bytes.Replace(line, []byte(")"), []byte(""), -1)
-    line = bytes.Replace(line, []byte("'"), []byte(""), -1)
-    line = bytes.Replace(line, []byte("\""),[]byte(""), -1)
-    line = bytes.Replace(line, []byte("\t"),[]byte(""), -1)
-    line = bytes.Replace(line, []byte("\n"),[]byte(""), -1)
+	line = bytes.Replace(line, []byte("."), []byte(""), -1)
+	line = bytes.Replace(line, []byte(","), []byte(""), -1)
+	line = bytes.Replace(line, []byte("!"), []byte(""), -1)
+	line = bytes.Replace(line, []byte("?"), []byte(""), -1)
+	line = bytes.Replace(line, []byte("|"), []byte(""), -1)
+	line = bytes.Replace(line, []byte("("), []byte(""), -1)
+	line = bytes.Replace(line, []byte(")"), []byte(""), -1)
+	line = bytes.Replace(line, []byte("'"), []byte(""), -1)
+	line = bytes.Replace(line, []byte("\""), []byte(""), -1)
+	line = bytes.Replace(line, []byte("\t"), []byte(""), -1)
+	line = bytes.Replace(line, []byte("\n"), []byte(""), -1)
 	tokens := tokenize(line, false)
 	tokenChannel <- tokens
 }
