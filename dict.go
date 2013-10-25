@@ -7,7 +7,6 @@ import (
 	"os"
 	"strconv"
 	"sync"
-    "runtime"
 )
 
 var tokenChannel = make(chan []string)
@@ -88,14 +87,9 @@ func CreateDict(filename string) {
 	go readFile(filename)
 	go outputDict()
 	fmt.Println("Creating token dictionary")
-    gc := 0
 	for line := range fileChannel {
-        gc += 1
 		tokenwg.Add(1)
 		go deliver(line)
-        if gc % 1000 == 0 {
-            go runtime.GC()
-        }
 	}
 	tokenwg.Wait()
 	doneChannel <- true
