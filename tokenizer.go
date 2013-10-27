@@ -14,7 +14,7 @@ import (
 var filewg sync.WaitGroup
 var fileChannel = make(chan []byte)
 
-var Dict = make(map[string]int) // maps tokens to an index
+var Dict = make(map[[20]byte]int)
 var Dictfile = "dict.csv"
 var Matrixfile = "matrix.csv"
 
@@ -48,7 +48,17 @@ func readFile(filename string) {
 	}()
 	filewg.Wait()
 	fmt.Println("Finished reading input file", filename)
-	//return results
+}
+
+func slice2array(in []byte) [20]byte {
+    out := [20]byte{}
+    for i, char := range in {
+        if i == 20 {
+            break
+        }
+        out[i] = char
+    }
+    return out
 }
 
 /**
@@ -58,14 +68,15 @@ func readFile(filename string) {
   If the `stem` flag is True, applies the Porter stemming algorithm
   to each token
 */
-func tokenize(instring []byte, stem bool) []string {
+func tokenize(instring []byte, stem bool) [][20]byte {
 	tokens := bytes.Split(instring, []byte(" "))
-    res := []string{}
+    res := [][20]byte{}
     for _, t := range tokens {
         if stem {
             t = stemmer.Stem(t)
         }
-        res = append(res, string(t))
+
+        res = append(res, [20]byte(slice2array(t)))
     }
     return res
 }

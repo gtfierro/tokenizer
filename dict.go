@@ -9,12 +9,12 @@ import (
 	"sync"
 )
 
-var tokenChannel = make(chan []string)
+var tokenChannel = make(chan [][20]byte)
 var doneChannel = make(chan bool)
 var tokenwg sync.WaitGroup
 
 type Entry struct {
-	token string
+	token [20]byte
 	index int
 }
 
@@ -26,7 +26,6 @@ func process() {
 		select {
 		case tokens := <-tokenChannel:
 			for _, token := range tokens {
-				token := string(token)
 				if Dict[token] == 0 {
 					Dict[token] = index
 					e := &Entry{token, index}
@@ -71,7 +70,7 @@ func outputDict() {
 	defer outfile.Close()
 	writer := bufio.NewWriter(outfile)
 	for e := range entryChannel {
-		writer.WriteString(e.token + "," + strconv.Itoa(e.index) + "\n")
+        writer.WriteString(string(e.token[:]) + "," + strconv.Itoa(e.index) + "\n")
 	}
 	writer.Flush()
 }
