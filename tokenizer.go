@@ -2,8 +2,8 @@ package tokenizer
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
-    "bytes"
 	"github.com/agonopol/go-stem/stemmer"
 	_ "html"
 	"os"
@@ -51,14 +51,14 @@ func readFile(filename string) {
 }
 
 func slice2array(in []byte) [20]byte {
-    out := [20]byte{}
-    for i, char := range in {
-        if i == 20 {
-            break
-        }
-        out[i] = char
-    }
-    return out
+	out := [20]byte{}
+	for i, char := range in {
+		if i == 20 {
+			break
+		}
+		out[i] = char
+	}
+	return out
 }
 
 /**
@@ -70,13 +70,13 @@ func slice2array(in []byte) [20]byte {
 */
 func tokenize(instring []byte, stem bool) [][20]byte {
 	tokens := bytes.Split(instring, []byte(" "))
-    res := [][20]byte{}
-    for _, t := range tokens {
-        if stem {
-            t = stemmer.Stem(t)
-        }
+	res := [][20]byte{}
+	for _, t := range tokens {
+		if stem {
+			t = stemmer.Stem(t)
+		}
 
-        res = append(res, [20]byte(slice2array(t)))
-    }
-    return res
+		res = append(res, [20]byte(slice2array(t)))
+	}
+	return res
 }

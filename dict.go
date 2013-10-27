@@ -70,7 +70,7 @@ func outputDict() {
 	defer outfile.Close()
 	writer := bufio.NewWriter(outfile)
 	for e := range entryChannel {
-        writer.WriteString(string(e.token[:]) + "," + strconv.Itoa(e.index) + "\n")
+		writer.WriteString(string(e.token[:]) + "," + strconv.Itoa(e.index) + "\n")
 	}
 	writer.Flush()
 }
