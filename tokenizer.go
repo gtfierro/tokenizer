@@ -72,11 +72,12 @@ func tokenize(instring []byte, stem bool) [][20]byte {
 	tokens := bytes.Split(instring, []byte(" "))
 	res := [][20]byte{}
 	for _, t := range tokens {
-		if stem {
-			t = stemmer.Stem(t)
+		for _, nt := range bytes.Split(t, []byte("/")) {
+			if stem {
+				nt = stemmer.Stem(nt)
+			}
+			res = append(res, [20]byte(slice2array(nt)))
 		}
-
-		res = append(res, [20]byte(slice2array(t)))
 	}
 	return res
 }
