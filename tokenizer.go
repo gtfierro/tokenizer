@@ -5,14 +5,11 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/agonopol/go-stem/stemmer"
-	_ "html"
 	"os"
-	_ "strings"
 	"sync"
 )
 
 var filewg sync.WaitGroup
-var fileChannel = make(chan []byte)
 
 var Dict = make(map[[20]byte]int)
 var Dictfile = "dict.csv"
@@ -26,7 +23,7 @@ var Matrixfile = "matrix.csv"
   * lowercase
   * removed all .,!?||()"'
 */
-func readFile(filename string) {
+func readFile(filename string, channel chan []byte) {
 	file, err := os.Open(filename)
 	if err != nil {
 		fmt.Println(err)
@@ -40,10 +37,10 @@ func readFile(filename string) {
 			line, err := reader.ReadBytes('\n')
 			if err != nil {
 				filewg.Done()
-				close(fileChannel)
+				close(channel)
 				break
 			}
-			fileChannel <- line
+			channel <- line
 		}
 	}()
 	filewg.Wait()

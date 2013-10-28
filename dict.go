@@ -11,6 +11,7 @@ import (
 
 var tokenChannel = make(chan [][20]byte)
 var doneChannel = make(chan bool)
+var fileChannel = make(chan []byte)
 var tokenwg sync.WaitGroup
 
 type Entry struct {
@@ -88,7 +89,7 @@ func outputDict() {
 */
 func CreateDict(filename string) {
 	go process()
-	go readFile(filename)
+	go readFile(filename, fileChannel)
 	go outputDict()
 	fmt.Println("Creating token dictionary")
 	for line := range fileChannel {
