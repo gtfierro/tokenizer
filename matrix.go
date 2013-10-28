@@ -1,70 +1,59 @@
 package tokenizer
 
-//
-//import (
-//	"fmt"
-//	"strconv"
-//	"sync"
-//)
-//
-//var in = make(chan string, 100)
-//var done = make(chan bool)
-//
-//func handle_print() {
-//	for {
-//		select {
-//		case s := <-in:
-//			fmt.Println(s)
-//		case <-done:
-//			break
-//		}
-//	}
-//}
-//
-//func print_map(patent_index int, tmpmap map[string]int) {
-//	for token, count := range tmpmap {
-//		entry := "(" + strconv.Itoa(patent_index) + "," + strconv.Itoa(Dict[token]) + "," + strconv.Itoa(count) + ")"
-//		in <- entry
-//	}
-//}
-//
-///** Parallel **/
-//
-//var wg sync.WaitGroup
-//
-//func PCreateMatrix(lines []string) {
-//	go handle_print()
-//	for patent_index, line := range lines {
-//		wg.Add(1)
-//		go pemit_sparse(patent_index, line)
-//	}
-//	wg.Wait()
-//	done <- true
-//}
-//
-//func pemit_sparse(patent_index int, line string) {
-//	defer wg.Done()
-//	tmpmap := make(map[string]int)
-//	for _, token := range tokenize(line, false) {
-//		tmpmap[token] += 1
-//	}
-//	print_map(patent_index, tmpmap)
-//}
-//
-///** Sequential **/
-//
-//func CreateMatrix(lines []string) {
-//	go handle_print()
-//	for patent_index, line := range lines {
-//		emit_sparse(patent_index, line)
-//	}
-//}
-//
-//func emit_sparse(patent_index int, line string) {
-//	tmpmap := make(map[string]int)
-//	for _, token := range tokenize(line, false) {
-//		tmpmap[token] += 1
-//	}
-//	print_map(patent_index, tmpmap)
-//	done <- true
-//}
+
+import (
+	"fmt"
+	"strconv"
+	"sync"
+    "os"
+    "bufio"
+)
+
+var wg sync.WaitGroup
+var matrixFileChannel = make(chan []byte)
+
+var in = make(chan string, 100)
+
+func outputMatrix() {
+	outfile, err := os.Create(Matrixfile)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer outfile.Close()
+	writer := bufio.NewWriter(outfile)
+	for e := range in {
+		writer.WriteString(e)
+	}
+	writer.Flush()
+}
+
+
+func printMap(patent_index int, tmpMap map[[20]byte]int) {
+	for token, count := range tmpMap {
+		entry := "(" + strconv.Itoa(patent_index) + "," + strconv.Itoa(Dict[token]) + "," + strconv.Itoa(count) + ")\n"
+		in <- entry
+	}
+}
+
+func CreateMatrix(filename string) {
+    go outputMatrix()
+    go readFile(filename, matrixFileChannel)
+    fmt.Println("Creating sparse matrix")
+    patentIndex := 0
+    for line := range matrixFileChannel {
+        wg.Add(1)
+        go emitSparse(patentIndex, line)
+        patentIndex += 1
+    }
+    wg.Wait()
+}
+
+func emitSparse(patentIndex int, line []byte) {
+    defer wg.Done()
+    tmpMap := make(map[[20]byte]int)
+    for _, token := range tokenize(line, false) {
+        tmpMap[token] += 1
+    }
+    printMap(patentIndex, tmpMap)
+}
