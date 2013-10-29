@@ -40,25 +40,57 @@ func process() {
 	}
 }
 
+/* loops through `target` and replaces
+each instance of `current` with `replacement`
+*/
+func replace(target []byte, current, replacement byte) []byte {
+    for i, b := range target {
+        if b == current {
+            target[i] = replacement
+        }
+    }
+    return target
+}
+
+/* loops through `target` and removes all
+instances of `current`
+*/
+
+func remove(target []byte, current byte) []byte {
+    i1 := 0
+    i2 := 0
+    length := len(target)
+    for {
+        if target[i2] != current {
+            target[i1] = target[i2]
+            i1 += 1
+        }
+        i2 += 1
+        if i2 == length {
+            break
+        }
+    }
+    return target[:i1]
+}
+
 func deliver(line []byte) {
-	defer tokenwg.Done()
 	line = UnescapeBytes(line)
 	line = bytes.ToLower(line)
 	line = bytes.Trim(line, " ")
-	line = bytes.Replace(line, []byte("."), []byte(""), -1)
-	line = bytes.Replace(line, []byte(","), []byte(""), -1)
-	line = bytes.Replace(line, []byte("!"), []byte(""), -1)
-	line = bytes.Replace(line, []byte("?"), []byte(""), -1)
-	line = bytes.Replace(line, []byte("|"), []byte(""), -1)
-	line = bytes.Replace(line, []byte("("), []byte(""), -1)
-	line = bytes.Replace(line, []byte(")"), []byte(""), -1)
-	line = bytes.Replace(line, []byte("'"), []byte(""), -1)
-	line = bytes.Replace(line, []byte("”"), []byte(""), -1)
-	line = bytes.Replace(line, []byte("“"), []byte(""), -1)
-	line = bytes.Replace(line, []byte("\""), []byte(""), -1)
-	line = bytes.Replace(line, []byte("\t"), []byte(""), -1)
-	line = bytes.Replace(line, []byte("\n"), []byte(""), -1)
-	line = bytes.Replace(line, []byte("/"), []byte(" "), -1)
+	line = remove(line, '.')
+	line = remove(line, ',')
+	line = remove(line, '!')
+	line = remove(line, '?')
+	line = remove(line, '|')
+	line = remove(line, '(')
+	line = remove(line, ')')
+	line = remove(line, '"')
+	//line = remove(line, '”')
+	//line = remove(line, '“')
+	line = remove(line, '\'')
+	line = remove(line, '\t')
+	line = remove(line, '\n')
+	line = replace(line, '/', ' ')
 	tokens := tokenize(line, false)
 	tokenChannel <- tokens
 }
