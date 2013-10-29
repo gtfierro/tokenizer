@@ -1,11 +1,10 @@
 package tokenizer
 
-
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strconv"
-    "os"
-    "bufio"
 )
 
 var in = make(chan string, 100)
@@ -23,7 +22,6 @@ func outputMatrix() {
 	}
 	writer.Flush()
 }
-
 
 func printMap(patent_index int, tmpMap map[[20]byte]int) {
 	for token, count := range tmpMap {

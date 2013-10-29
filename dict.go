@@ -20,8 +20,8 @@ type Entry struct {
 }
 
 type Row struct {
-    index int
-    tokens [][20]byte
+	index  int
+	tokens [][20]byte
 }
 
 var rowchannel = make(chan *Row)
@@ -33,9 +33,9 @@ func process() {
 	for {
 		select {
 		case r := <-rowchannel:
-            tmpMap := make(map[[20]byte]int)
+			tmpMap := make(map[[20]byte]int)
 			for _, token := range r.tokens {
-                tmpMap[token] += 1
+				tmpMap[token] += 1
 				if Dict[token] == 0 {
 					Dict[token] = index
 					e := &Entry{token, index}
@@ -43,7 +43,7 @@ func process() {
 					index += 1
 				}
 			}
-            printMap(r.index, tmpMap)
+			printMap(r.index, tmpMap)
 		case <-doneChannel:
 			break
 		}
@@ -102,8 +102,8 @@ func deliver(line []byte, rowIndex int) {
 	line = remove(line, '\n')
 	line = replace(line, '/', ' ')
 	tokens := tokenize(line, false)
-    r := &Row{rowIndex, tokens}
-    rowchannel <- r
+	r := &Row{rowIndex, tokens}
+	rowchannel <- r
 	//tokenChannel <- tokens
 }
 
@@ -135,15 +135,15 @@ func CreateDict(filename string) {
 	go process()
 	go readFile(filename, fileChannel)
 	go outputDict()
-    go outputMatrix()
+	go outputMatrix()
 	fmt.Println("Creating token dictionary")
-    rowIndex := 0
+	rowIndex := 0
 	for i := 0; i < 100; i++ {
 		tokenwg.Add(1)
 		go func() {
 			for line := range fileChannel {
 				deliver(line, rowIndex)
-                rowIndex += 1
+				rowIndex += 1
 			}
 			tokenwg.Done()
 		}()
