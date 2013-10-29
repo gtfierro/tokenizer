@@ -124,10 +124,15 @@ func CreateDict(filename string) {
 	go readFile(filename, fileChannel)
 	go outputDict()
 	fmt.Println("Creating token dictionary")
-	for line := range fileChannel {
-		tokenwg.Add(1)
-		go deliver(line)
-	}
+    for i := 0; i < 100; i++ {
+        tokenwg.Add(1)
+        go func() {
+            for line := range fileChannel {
+                deliver(line)
+            }
+            tokenwg.Done()
+        }()
+    }
 	tokenwg.Wait()
 	doneChannel <- true
 	fmt.Println("Finished creating token dictionary with", len(Dict), "items")
