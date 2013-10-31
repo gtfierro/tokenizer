@@ -19,10 +19,10 @@ func outputMatrix() {
 	writer := bufio.NewWriter(outfile)
 	for e := range in {
 		writer.WriteString(e)
-        matrixwg.Done()
+		matrixwg.Done()
 	}
 	writer.Flush()
-    fmt.Println("Finished outputting matrix.csv")
+	fmt.Println("Finished outputting matrix.csv")
 }
 
 func printMap(patent_index int, tmpMap map[[20]byte]int) {

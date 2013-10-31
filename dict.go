@@ -44,12 +44,12 @@ func process() {
 					index += 1
 				}
 			}
-            matrixwg.Add(len(tmpMap))
+			matrixwg.Add(len(tmpMap))
 			printMap(r.index, tmpMap)
 		case <-doneChannel:
-            close(entryChannel)
-            matrixwg.Wait()
-            close(in)
+			close(entryChannel)
+			matrixwg.Wait()
+			close(in)
 			break
 		}
 	}
@@ -126,7 +126,7 @@ func outputDict() {
 		}
 		writer.WriteString(string(e.token[:n]) + "," + strconv.Itoa(e.index) + "\n")
 	}
-    fmt.Println("Finished outputting dict.csv")
+	fmt.Println("Finished outputting dict.csv")
 	writer.Flush()
 }
 
