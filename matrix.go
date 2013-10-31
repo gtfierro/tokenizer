@@ -19,15 +19,16 @@ func outputMatrix() {
 	writer := bufio.NewWriter(outfile)
 	for e := range in {
 		writer.WriteString(e)
-		matrixwg.Done()
 	}
 	writer.Flush()
 	fmt.Println("Finished outputting matrix.csv")
+	matrixDone <- true
 }
 
-func printMap(patent_index int, tmpMap map[[20]byte]int) {
+func printMap(patent_index int32, tmpMap map[[20]byte]int) {
 	for token, count := range tmpMap {
-		entry := strconv.Itoa(patent_index) + "," + strconv.Itoa(Dict[token]) + "," + strconv.Itoa(count) + "\n"
+		entry := strconv.Itoa(int(patent_index)) + "," + strconv.Itoa(Dict[token]) + "," + strconv.Itoa(count) + "\n"
 		in <- entry
 	}
+	matrixwg.Done()
 }

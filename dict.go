@@ -7,11 +7,13 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"sync/atomic"
 )
 
 var tokenChannel = make(chan [][20]byte)
 var doneChannel = make(chan bool)
 var fileChannel = make(chan []byte)
+var matrixDone = make(chan bool)
 var tokenwg sync.WaitGroup
 var matrixwg sync.WaitGroup
 
@@ -21,7 +23,7 @@ type Entry struct {
 }
 
 type Row struct {
-	index  int
+	index  int32
 	tokens [][20]byte
 }
 
@@ -44,12 +46,10 @@ func process() {
 					index += 1
 				}
 			}
-			matrixwg.Add(len(tmpMap))
 			printMap(r.index, tmpMap)
 		case <-doneChannel:
 			close(entryChannel)
 			matrixwg.Wait()
-			close(in)
 			break
 		}
 	}
@@ -88,7 +88,7 @@ func remove(target []byte, current byte) []byte {
 	return target[:i1]
 }
 
-func deliver(line []byte, rowIndex int) {
+func deliver(line []byte, rowIndex int32) {
 	line = UnescapeBytes(line)
 	line = bytes.ToLower(line)
 	line = bytes.Trim(line, " ")
@@ -142,13 +142,14 @@ func CreateDict(filename string) {
 	go outputDict()
 	go outputMatrix()
 	fmt.Println("Creating token dictionary")
-	rowIndex := 0
+	rowIndex := int32(0)
 	for i := 0; i < 100; i++ {
 		tokenwg.Add(1)
 		go func() {
 			for line := range fileChannel {
+				matrixwg.Add(1)
+				atomic.AddInt32(&rowIndex, 1)
 				deliver(line, rowIndex)
-				rowIndex += 1
 			}
 			tokenwg.Done()
 		}()
@@ -156,4 +157,7 @@ func CreateDict(filename string) {
 	tokenwg.Wait()
 	doneChannel <- true
 	fmt.Println("Finished creating token dictionary with", len(Dict), "items")
+	matrixwg.Wait()
+	close(in)
+	<-matrixDone
 }
