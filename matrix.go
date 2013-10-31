@@ -25,7 +25,7 @@ func outputMatrix() {
 
 func printMap(patent_index int, tmpMap map[[20]byte]int) {
 	for token, count := range tmpMap {
-		entry := "(" + strconv.Itoa(patent_index) + "," + strconv.Itoa(Dict[token]) + "," + strconv.Itoa(count) + ")\n"
+		entry := strconv.Itoa(patent_index) + "," + strconv.Itoa(Dict[token]) + "," + strconv.Itoa(count) + "\n"
 		in <- entry
 	}
 }
