@@ -100,12 +100,17 @@ func deliver(line []byte, rowIndex int32) {
 	line = remove(line, '(')
 	line = remove(line, ')')
 	line = remove(line, '"')
+	line = remove(line, '+')
+	line = remove(line, '=')
+	line = remove(line, ':')
+	line = remove(line, ';')
 	//line = remove(line, '”')
 	//line = remove(line, '“')
 	line = remove(line, '\'')
 	line = remove(line, '\t')
 	line = remove(line, '\n')
 	line = replace(line, '/', ' ')
+	line = replace(line, '_', ' ')
 	tokens := tokenize(line, false)
 	r := &Row{rowIndex, tokens}
 	rowchannel <- r
