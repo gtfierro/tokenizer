@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-var in = make(chan string, 100)
+var in = make(chan string)
 
 func outputMatrix() {
 	outfile, err := os.Create(Matrixfile)
@@ -19,8 +19,10 @@ func outputMatrix() {
 	writer := bufio.NewWriter(outfile)
 	for e := range in {
 		writer.WriteString(e)
+        matrixwg.Done()
 	}
 	writer.Flush()
+    fmt.Println("Finished outputting matrix.csv")
 }
 
 func printMap(patent_index int, tmpMap map[[20]byte]int) {

@@ -13,6 +13,7 @@ var tokenChannel = make(chan [][20]byte)
 var doneChannel = make(chan bool)
 var fileChannel = make(chan []byte)
 var tokenwg sync.WaitGroup
+var matrixwg sync.WaitGroup
 
 type Entry struct {
 	token [20]byte
@@ -43,8 +44,12 @@ func process() {
 					index += 1
 				}
 			}
+            matrixwg.Add(len(tmpMap))
 			printMap(r.index, tmpMap)
 		case <-doneChannel:
+            close(entryChannel)
+            matrixwg.Wait()
+            close(in)
 			break
 		}
 	}
@@ -104,7 +109,6 @@ func deliver(line []byte, rowIndex int) {
 	tokens := tokenize(line, false)
 	r := &Row{rowIndex, tokens}
 	rowchannel <- r
-	//tokenChannel <- tokens
 }
 
 func outputDict() {
@@ -122,6 +126,7 @@ func outputDict() {
 		}
 		writer.WriteString(string(e.token[:n]) + "," + strconv.Itoa(e.index) + "\n")
 	}
+    fmt.Println("Finished outputting dict.csv")
 	writer.Flush()
 }
 
