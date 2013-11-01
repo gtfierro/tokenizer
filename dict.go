@@ -46,6 +46,7 @@ func process() {
 					index += 1
 				}
 			}
+			matrixwg.Add(len(tmpMap))
 			printMap(r.index, tmpMap)
 		case <-doneChannel:
 			close(entryChannel)
@@ -152,7 +153,6 @@ func CreateDict(filename string) {
 		tokenwg.Add(1)
 		go func() {
 			for line := range fileChannel {
-				matrixwg.Add(1)
 				atomic.AddInt32(&rowIndex, 1)
 				deliver(line, rowIndex)
 			}

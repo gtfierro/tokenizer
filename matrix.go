@@ -19,6 +19,7 @@ func outputMatrix() {
 	writer := bufio.NewWriter(outfile)
 	for e := range in {
 		writer.WriteString(e)
+		matrixwg.Done()
 	}
 	writer.Flush()
 	fmt.Println("Finished outputting matrix.csv")
@@ -30,5 +31,4 @@ func printMap(patent_index int32, tmpMap map[[20]byte]int) {
 		entry := strconv.Itoa(int(patent_index)) + "," + strconv.Itoa(Dict[token]) + "," + strconv.Itoa(count) + "\n"
 		in <- entry
 	}
-	matrixwg.Done()
 }
