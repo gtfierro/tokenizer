@@ -62,6 +62,20 @@ func slice2array(in []byte) [20]byte {
 	return out
 }
 
+/*
+   Returns true if the input byte slice
+   is all digits
+*/
+func isDigits(target []byte) bool {
+	all := true
+	for _, b := range target {
+		if b <= '0' || '9' <= b {
+			all = false
+		}
+	}
+	return all
+}
+
 /**
   Takes as input a space-delimited string and returns a slice of all the
   tokens in that string.
@@ -73,6 +87,9 @@ func tokenize(instring []byte, stem bool) [][20]byte {
 	tokens := bytes.Split(instring, []byte(" "))
 	res := [][20]byte{}
 	for _, t := range tokens {
+		if isDigits(t) {
+			continue
+		}
 		if stem {
 			t = stemmer.Stem(t)
 		}
