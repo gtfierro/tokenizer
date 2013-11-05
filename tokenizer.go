@@ -9,19 +9,19 @@ import (
 	"sync"
 )
 
+// synchronizes the goroutine that reads the input file
 var filewg sync.WaitGroup
 
 var Dict = make(map[[20]byte]int)
+
+// output files
 var Dictfile = "dict.csv"
 var Matrixfile = "matrix.csv"
 
 /**
-  Takes as input a filename containing the full text for a patent on each line. Returns
-  a string slice where each entry is the full text of a patent (order is maintained)
-  which has had the following transformations applied to it:
-  * unescaped HTML sequences
-  * lowercase
-  * removed all .,!?||()"'
+  Takes as input a filename containing the full text for a patent on each line and the
+  deliver channel over which the read lines will be delivered. Delivers each line as
+  a byte slice.
 */
 func readFile(filename string, channel chan []byte) {
 	file, err := os.Open(filename)
@@ -47,6 +47,10 @@ func readFile(filename string, channel chan []byte) {
 	fmt.Println("Finished reading input file", filename)
 }
 
+/*
+Truncates a byte slice to length 20 so that it can be
+used as a key in the Dict map
+*/
 func slice2array(in []byte) [20]byte {
 	out := [20]byte{}
 	for i, char := range in {

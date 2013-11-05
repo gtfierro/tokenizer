@@ -10,38 +10,60 @@ import (
 	"sync/atomic"
 )
 
-var tokenChannel = make(chan [][20]byte)
+// synchronize printing the dictionary
 var doneChannel = make(chan bool)
+
+// delivery channel for getting lines from the input file
 var fileChannel = make(chan []byte)
+
+// ensures flushing matrix.csv
 var matrixDone = make(chan bool)
+
+// synchronizes goroutines that process lines from file
 var tokenwg sync.WaitGroup
+
+// ensures completion of printing matrix
 var matrixwg sync.WaitGroup
 
-type Entry struct {
+/*
+   References a dictionary entry. If we deliver the info
+   as a struct, we don't have to waste memory/time
+   converting the entry to a string
+*/
+type entry struct {
 	token [20]byte
 	index int
 }
 
-type Row struct {
+/*
+   References the tokens for a specific row.
+*/
+type row struct {
 	index  int32
 	tokens [][20]byte
 }
 
-var rowchannel = make(chan *Row)
+// matrix delivery channel
+var rowChannel = make(chan *row)
 
-var entryChannel = make(chan *Entry)
+// dictionary delivery channel
+var entryChannel = make(chan *entry)
 
+/*
+   Watchdog goroutine for ensuring synchronous access
+   to the primary Dictionary. Dispatches printing
+*/
 func process() {
 	index := 0
 	for {
 		select {
-		case r := <-rowchannel:
+		case r := <-rowChannel:
 			tmpMap := make(map[[20]byte]int)
 			for _, token := range r.tokens {
 				tmpMap[token] += 1
 				if Dict[token] == 0 {
 					Dict[token] = index
-					e := &Entry{token, index}
+					e := &entry{token, index}
 					entryChannel <- e
 					index += 1
 				}
@@ -56,8 +78,9 @@ func process() {
 	}
 }
 
-/* loops through `target` and replaces
-each instance of `current` with `replacement`
+/*
+   loops through `target` and replaces
+   each instance of `current` with `replacement`
 */
 func replace(target []byte, current, replacement byte) []byte {
 	for i, b := range target {
@@ -68,8 +91,9 @@ func replace(target []byte, current, replacement byte) []byte {
 	return target
 }
 
-/* loops through `target` and removes all
-instances of `current`
+/*
+   loops through `target` and removes all
+   instances of `current`
 */
 
 func remove(target []byte, current byte) []byte {
@@ -89,6 +113,16 @@ func remove(target []byte, current byte) []byte {
 	return target[:i1]
 }
 
+/*
+   Takes as input one of the lines from the input file.
+   Unescapes unicode sequences, normalizes text to lowercase,
+   removes .,!?|()"+=:;`\t\n and replaces /_ with spaces
+   so that the words on either side can be considered
+   separate tokens.
+
+   Hands off the space-delimited line to be tokenized,
+   and then sends to the process function above
+*/
 func deliver(line []byte, rowIndex int32) {
 	line = UnescapeBytes(line)
 	line = bytes.ToLower(line)
@@ -113,10 +147,14 @@ func deliver(line []byte, rowIndex int32) {
 	line = replace(line, '/', ' ')
 	line = replace(line, '_', ' ')
 	tokens := tokenize(line, false)
-	r := &Row{rowIndex, tokens}
-	rowchannel <- r
+	r := &row{rowIndex, tokens}
+	rowChannel <- r
 }
 
+/*
+   As dictionary entries are delivered from process/entryChannel,
+   prints them into Dictfile
+*/
 func outputDict() {
 	outfile, err := os.Create(Dictfile)
 	if err != nil {
