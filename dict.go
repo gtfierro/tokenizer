@@ -93,16 +93,26 @@ func replace(target []byte, current, replacement byte) []byte {
 
 /*
    loops through `target` and removes all
-   instances of `current`
+   instances of each byte found in `unwanted`
 */
 
-func remove(target []byte, current byte) []byte {
+var unwanted = []byte(".,!?|()[]\"+=;/'\t\n0123456789<>:{}|\\")
+
+func remove_unwanted(target []byte) []byte {
 	i1 := 0
 	i2 := 0
 	length := len(target)
 	for {
-		if target[i2] != current {
-			target[i1] = target[i2]
+		hit := false
+		for _, char := range unwanted {
+			if target[i2] != char {
+				target[i1] = target[i2]
+			} else {
+				hit = true
+				break
+			}
+		}
+		if !hit {
 			i1 += 1
 		}
 		i2 += 1
@@ -127,23 +137,7 @@ func deliver(line []byte, rowIndex int32) {
 	line = UnescapeBytes(line)
 	line = bytes.ToLower(line)
 	line = bytes.Trim(line, " ")
-	line = remove(line, '.')
-	line = remove(line, ',')
-	line = remove(line, '!')
-	line = remove(line, '?')
-	line = remove(line, '|')
-	line = remove(line, '(')
-	line = remove(line, ')')
-	line = remove(line, '"')
-	line = remove(line, '+')
-	line = remove(line, '=')
-	line = remove(line, ':')
-	line = remove(line, ';')
-	//line = remove(line, '”')
-	//line = remove(line, '“')
-	line = remove(line, '\'')
-	line = remove(line, '\t')
-	line = remove(line, '\n')
+	line = remove_unwanted(line)
 	line = replace(line, '/', ' ')
 	line = replace(line, '_', ' ')
 	tokens := tokenize(line, false)
